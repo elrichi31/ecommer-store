@@ -3,7 +3,7 @@
 import { isManual, isStripeLike } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@medusajs/ui"
+import { Button, toast } from "@medusajs/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
 import React, { useState } from "react"
 import ErrorMessage from "../error-message"
@@ -60,6 +60,7 @@ const StripePaymentButton = ({
     await placeOrder()
       .catch((err) => {
         setErrorMessage(err.message)
+        toast.error("Error al procesar el pago. Inténtalo más tarde.")
       })
       .finally(() => {
         setSubmitting(false)
@@ -159,6 +160,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
     await placeOrder()
       .catch((err) => {
         setErrorMessage(err.message)
+        toast.error("Error al procesar el pedido. Inténtalo más tarde.")
       })
       .finally(() => {
         setSubmitting(false)

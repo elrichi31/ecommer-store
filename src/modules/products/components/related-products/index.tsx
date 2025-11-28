@@ -1,5 +1,6 @@
 import { listProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
+import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import ProductPreview from "../product-preview"
 import ProductCarousel from "./product-carousel"
@@ -38,9 +39,14 @@ export default async function RelatedProducts({
     queryParams,
     countryCode,
   }).then(({ response }) => {
-    return response.products.filter(
-      (responseProduct) => responseProduct.id !== product.id
-    ).slice(0, 5) // Limit to 5 products
+    return response.products
+      .filter((responseProduct) => responseProduct.id !== product.id)
+      .filter((p) => {
+        // Only show products with valid prices
+        const { cheapestPrice } = getProductPrice({ product: p })
+        return cheapestPrice !== null
+      })
+      .slice(0, 5) // Limit to 5 products
   })
 
   if (!products.length) {

@@ -1,6 +1,6 @@
 "use client"
 
-import { Table, Text, clx } from "@medusajs/ui"
+import { Table, Text, clx, toast } from "@medusajs/ui"
 import { updateLineItem } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import CartItemSelect from "@modules/cart/components/cart-item-select"
@@ -34,6 +34,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
     })
       .catch((err) => {
         setError(err.message)
+        toast.error("Error al actualizar la cantidad. Inténtalo más tarde.")
       })
       .finally(() => {
         setUpdating(false)

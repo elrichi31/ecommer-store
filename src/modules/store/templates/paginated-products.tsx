@@ -1,5 +1,6 @@
 import { listProductsWithSort } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
+import { getProductPrice } from "@lib/util/get-product-price"
 import ProductPreview from "@modules/products/components/product-preview"
 import { Pagination } from "@modules/store/components/pagination"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
@@ -63,7 +64,7 @@ export default async function PaginatedProducts({
   }
 
   let {
-    response: { products, count },
+    response: { products: allProducts },
   } = await listProductsWithSort({
     page,
     queryParams,
@@ -71,7 +72,27 @@ export default async function PaginatedProducts({
     countryCode,
   })
 
-  const totalPages = Math.ceil(count / PRODUCT_LIMIT)
+  // Filter out products without prices
+  const products = allProducts.filter((product) => {
+    const { cheapestPrice } = getProductPrice({ product })
+    return cheapestPrice !== null
+  })
+
+  // For pagination, we need to get total count of products with prices
+  // Get all products to count (without pagination limit)
+  const { response: { products: allForCount } } = await listProductsWithSort({
+    page: 1,
+    queryParams: { ...queryParams, limit: 100 },
+    sortBy,
+    countryCode,
+  })
+  
+  const totalWithPrice = allForCount.filter((product) => {
+    const { cheapestPrice } = getProductPrice({ product })
+    return cheapestPrice !== null
+  }).length
+
+  const totalPages = Math.ceil(totalWithPrice / PRODUCT_LIMIT)
 
   if (products.length === 0) {
     return (

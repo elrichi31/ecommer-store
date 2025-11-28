@@ -2,7 +2,7 @@
 
 import { deleteLineItem } from "@lib/data/cart"
 import { Spinner, Trash } from "@medusajs/icons"
-import { clx } from "@medusajs/ui"
+import { clx, toast } from "@medusajs/ui"
 import { useState, useTransition } from "react"
 
 const DeleteButton = ({
@@ -22,7 +22,7 @@ const DeleteButton = ({
     try {
       await deleteLineItem(lineId)
     } catch (err) {
-      console.error("Error deleting item:", err)
+      toast.error("Error al eliminar el producto. Inténtalo más tarde.")
     } finally {
       setIsDeleting(false)
     }

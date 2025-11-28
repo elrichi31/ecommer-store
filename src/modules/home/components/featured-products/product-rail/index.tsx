@@ -1,4 +1,5 @@
 import { listProducts } from "@lib/data/products"
+import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import { Text } from "@medusajs/ui"
 
@@ -13,7 +14,7 @@ export default async function ProductRail({
   region: HttpTypes.StoreRegion
 }) {
   const {
-    response: { products: pricedProducts },
+    response: { products: allProducts },
   } = await listProducts({
     regionId: region.id,
     queryParams: {
@@ -22,7 +23,17 @@ export default async function ProductRail({
     },
   })
 
-  if (!pricedProducts) {
+  if (!allProducts) {
+    return null
+  }
+
+  // Filter out products without prices
+  const pricedProducts = allProducts.filter((product) => {
+    const { cheapestPrice } = getProductPrice({ product })
+    return cheapestPrice !== null
+  })
+
+  if (pricedProducts.length === 0) {
     return null
   }
 

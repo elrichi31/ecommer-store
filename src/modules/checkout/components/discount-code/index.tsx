@@ -1,6 +1,6 @@
 "use client"
 
-import { Badge, Heading, Input, Label, Text } from "@medusajs/ui"
+import { Badge, Heading, Input, Label, Text, toast } from "@medusajs/ui"
 import React from "react"
 
 import { applyPromotions } from "@lib/data/cart"
@@ -26,9 +26,13 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
       (promotion) => promotion.code !== code
     )
 
-    await applyPromotions(
-      validPromotions.filter((p) => p.code !== undefined).map((p) => p.code!)
-    )
+    try {
+      await applyPromotions(
+        validPromotions.filter((p) => p.code !== undefined).map((p) => p.code!)
+      )
+    } catch (e: any) {
+      toast.error("Error al eliminar el código. Inténtalo más tarde.")
+    }
   }
 
   const addPromotionCode = async (formData: FormData) => {
@@ -46,8 +50,10 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
 
     try {
       await applyPromotions(codes)
+      toast.success("Código promocional aplicado")
     } catch (e: any) {
       setErrorMessage(e.message)
+      toast.error("Error al aplicar el código. Inténtalo más tarde.")
     }
 
     if (input) {

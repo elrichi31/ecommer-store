@@ -7,6 +7,7 @@ import SearchInput from "@modules/store/components/search-input"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { listCategories } from "@lib/data/categories"
 import { listProductsWithSort } from "@lib/data/products"
+import { getProductPrice } from "@lib/util/get-product-price"
 
 import PaginatedProducts from "./paginated-products"
 
@@ -25,16 +26,22 @@ const StoreTemplate = async ({
   const sort = sortBy || "created_at"
   const categories = await listCategories({ limit: 20 })
   
-  // Get product count (with search filter if applicable)
-  const { response: { count } } = await listProductsWithSort({
+  // Get all products to count only those with valid prices
+  const { response: { products: allProducts } } = await listProductsWithSort({
     page: 1,
     queryParams: { 
-      limit: 1,
+      limit: 100, // Get enough products to count
       ...(searchQuery && { q: searchQuery }),
     },
     sortBy: sort,
     countryCode,
   })
+
+  // Count only products with valid prices
+  const count = allProducts.filter((product) => {
+    const { cheapestPrice } = getProductPrice({ product })
+    return cheapestPrice !== null
+  }).length
 
   return (
     <div
