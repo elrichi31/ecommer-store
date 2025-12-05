@@ -13,6 +13,8 @@ export const listCartPaymentMethods = async (regionId: string) => {
     ...(await getCacheOptions("payment_providers")),
   }
 
+  console.log("Fetching payment methods for region:", regionId)
+
   return sdk.client
     .fetch<HttpTypes.StorePaymentProviderListResponse>(
       `/store/payment-providers`,
@@ -21,15 +23,17 @@ export const listCartPaymentMethods = async (regionId: string) => {
         query: { region_id: regionId },
         headers,
         next,
-        cache: "force-cache",
+        cache: "no-store", // Temporarily disable cache to debug
       }
     )
-    .then(({ payment_providers }) =>
-      payment_providers.sort((a, b) => {
+    .then(({ payment_providers }) => {
+      console.log("Payment providers found:", payment_providers)
+      return payment_providers.sort((a, b) => {
         return a.id > b.id ? 1 : -1
       })
-    )
-    .catch(() => {
+    })
+    .catch((error) => {
+      console.error("Error fetching payment providers:", error)
       return null
     })
 }

@@ -37,11 +37,6 @@ export default async function Home(props: {
       <FeaturedCollections collections={collections} countryCode={countryCode} />
       <Craftsmanship />
       <ShopByCategory countryCode={countryCode} />
-      <div className="py-12">
-        <ul className="flex flex-col gap-x-6">
-          <FeaturedProducts collections={collections} region={region} />
-        </ul>
-      </div>
     </>
   )
 }

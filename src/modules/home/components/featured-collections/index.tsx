@@ -1,35 +1,30 @@
-import { HttpTypes } from "@medusajs/types"
 import { Heading } from "@medusajs/ui"
 import Link from "next/link"
 import Image from "next/image"
+import { ExtendedCollection } from "@lib/data/collections"
 
-const DEMO_COLLECTIONS = [
-  {
-    id: "1",
-    title: "Lino de Verano",
-    handle: "lino-verano",
-    image: "https://images.unsplash.com/photo-1620799140188-3b2a7c3e0e27?w=800&q=80",
-  },
-  {
-    id: "2",
-    title: "Esenciales de Cachemira",
-    handle: "cachemira",
-    image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800&q=80",
-  },
-  {
-    id: "3",
-    title: "Iconos Atemporales",
-    handle: "atemporales",
-    image: "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800&q=80",
-  },
-]
+// Placeholder image when collection doesn't have one
+const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80"
 
 export default function FeaturedCollections({
+  collections,
   countryCode,
 }: {
-  collections?: HttpTypes.StoreCollection[]
+  collections?: ExtendedCollection[]
   countryCode: string
 }) {
+  // Filter collections that have an image_url, or show all if none have images
+  const collectionsWithImages = collections?.filter(
+    (c) => c.image_url
+  ) || []
+  
+  const displayCollections = collectionsWithImages.length > 0 
+    ? collectionsWithImages 
+    : collections?.slice(0, 6) || []
+
+  if (displayCollections.length === 0) {
+    return null
+  }
 
   return (
     <section className="py-12 sm:py-16 lg:py-20">
@@ -43,7 +38,7 @@ export default function FeaturedCollections({
 
         {/* Collections Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {DEMO_COLLECTIONS.map((collection) => (
+          {displayCollections.map((collection) => (
             <Link
               key={collection.id}
               href={`/${countryCode}/collections/${collection.handle}`}
@@ -52,7 +47,7 @@ export default function FeaturedCollections({
               {/* Collection Image */}
               <div className="absolute inset-0">
                 <Image
-                  src={collection.image}
+                  src={collection.image_url || PLACEHOLDER_IMAGE}
                   alt={collection.title}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -61,11 +56,16 @@ export default function FeaturedCollections({
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
               </div>
 
-              {/* Collection Title */}
+              {/* Collection Title & Description */}
               <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                 <h3 className="text-lg sm:text-xl font-medium mb-1 drop-shadow-lg">
                   {collection.title}
                 </h3>
+                {collection.description && (
+                  <p className="text-xs sm:text-sm text-white/90 mb-1 line-clamp-2 drop-shadow">
+                    {collection.description}
+                  </p>
+                )}
                 <p className="text-xs sm:text-sm text-white/80 group-hover:text-white transition-colors">
                   Ver colección →
                 </p>

@@ -20,34 +20,74 @@ export default async function RelatedProducts({
     return null
   }
 
-  // edit this function to define your related products logic
-  const queryParams: HttpTypes.StoreProductListParams = {}
-  if (region?.id) {
-    queryParams.region_id = region.id
-  }
-  if (product.collection_id) {
-    queryParams.collection_id = [product.collection_id]
-  }
-  if (product.tags) {
-    queryParams.tag_id = product.tags
-      .map((t) => t.id)
-      .filter(Boolean) as string[]
-  }
-  queryParams.is_giftcard = false
-
-  const products = await listProducts({
-    queryParams,
-    countryCode,
-  }).then(({ response }) => {
-    return response.products
-      .filter((responseProduct) => responseProduct.id !== product.id)
+  // Helper function to filter products with valid prices
+  const filterProductsWithPrice = (products: HttpTypes.StoreProduct[]) => {
+    return products
+      .filter((p) => p.id !== product.id)
       .filter((p) => {
-        // Only show products with valid prices
         const { cheapestPrice } = getProductPrice({ product: p })
         return cheapestPrice !== null
       })
-      .slice(0, 5) // Limit to 5 products
-  })
+  }
+
+  let products: HttpTypes.StoreProduct[] = []
+
+  // First try: Get products from same category
+  if (product.categories && product.categories.length > 0) {
+    const categoryIds = product.categories.map((c) => c.id)
+    const { response } = await listProducts({
+      queryParams: {
+        region_id: region.id,
+        category_id: categoryIds,
+        is_giftcard: false,
+        limit: 10,
+      },
+      countryCode,
+    })
+    products = filterProductsWithPrice(response.products)
+  }
+
+  // Second try: If no products from category, get products from same collection
+  if (products.length < 3 && product.collection_id) {
+    const { response } = await listProducts({
+      queryParams: {
+        region_id: region.id,
+        collection_id: [product.collection_id],
+        is_giftcard: false,
+        limit: 10,
+      },
+      countryCode,
+    })
+    const collectionProducts = filterProductsWithPrice(response.products)
+    // Add products that aren't already in the list
+    for (const p of collectionProducts) {
+      if (!products.find((existing) => existing.id === p.id)) {
+        products.push(p)
+      }
+    }
+  }
+
+  // Third try: If still not enough, get any products
+  if (products.length < 3) {
+    const { response } = await listProducts({
+      queryParams: {
+        region_id: region.id,
+        is_giftcard: false,
+        limit: 10,
+      },
+      countryCode,
+    })
+    const anyProducts = filterProductsWithPrice(response.products)
+    // Add products that aren't already in the list
+    for (const p of anyProducts) {
+      if (!products.find((existing) => existing.id === p.id)) {
+        products.push(p)
+      }
+    }
+  }
+
+  // Limit to 10 products
+  products = products.slice(0, 10)
 
   if (!products.length) {
     return null
@@ -66,7 +106,10 @@ export default async function RelatedProducts({
 
       <ProductCarousel>
         {products.map((product) => (
-          <div key={product.id} className="w-64 flex-shrink-0">
+          <div 
+            key={product.id} 
+            className="w-[280px] sm:w-[220px] md:w-[200px] lg:w-[calc((100%-80px)/5)] flex-shrink-0"
+          >
             <ProductPreview region={region} product={product} />
           </div>
         ))}

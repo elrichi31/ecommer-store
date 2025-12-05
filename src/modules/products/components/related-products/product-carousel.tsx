@@ -30,9 +30,10 @@ export default function ProductCarousel({ children }: ProductCarouselProps) {
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      const scrollAmount = 280 // Approx width of one product card + gap
+      const containerWidth = scrollRef.current.clientWidth
+      // Scroll by the width of the visible area (shows next set of products)
       scrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
+        left: direction === "left" ? -containerWidth : containerWidth,
         behavior: "smooth",
       })
     }
@@ -44,7 +45,7 @@ export default function ProductCarousel({ children }: ProductCarouselProps) {
       {canScrollLeft && (
         <button
           onClick={() => scroll("left")}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 -translate-x-1/2"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-all sm:opacity-0 sm:group-hover:opacity-100 -translate-x-1/2"
           aria-label="Previous products"
         >
           <svg
@@ -67,7 +68,7 @@ export default function ProductCarousel({ children }: ProductCarouselProps) {
       {canScrollRight && (
         <button
           onClick={() => scroll("right")}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 translate-x-1/2"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-all sm:opacity-0 sm:group-hover:opacity-100 translate-x-1/2"
           aria-label="Next products"
         >
           <svg
